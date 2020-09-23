@@ -7,11 +7,7 @@ public class TetrisBlock : MonoBehaviour
     private float previousTime, fallTime = 0.8f;
     public static int height = 20, width = 10;
     public Vector3 rotationPoint;
-    private static Transform[,] grid = new Transform[width, height];
-    void Start() 
-    {
-        
-    }
+    private static Transform[,] grid = new Transform[width, height + 2];
     void Update() 
     {
         if (Input.GetKeyDown(KeyCode.LeftArrow))
@@ -48,7 +44,10 @@ public class TetrisBlock : MonoBehaviour
                 AddToGrid();
                 LineClear();
                 this.enabled = false;
-                FindObjectOfType<Spawn>().Generate();
+                if (!GameOver())
+                {
+                    FindObjectOfType<Spawn>().Generate();
+                }
             }
             previousTime = Time.time;
         }
@@ -60,7 +59,6 @@ public class TetrisBlock : MonoBehaviour
         {
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
-
             grid[roundedX, roundedY] = children;
         }
     }
@@ -114,7 +112,17 @@ public class TetrisBlock : MonoBehaviour
         }
     }
 
-
+    bool GameOver()
+    {
+        for (int i = 0; i < width; i++)
+        {
+            if (grid[i, height] != null || grid[i, height + 1] != null)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
     bool ValidMove()
     {
         foreach(Transform children in transform)
@@ -122,14 +130,17 @@ public class TetrisBlock : MonoBehaviour
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
 
-            if(roundedX < 0 || roundedX >= width || roundedY < 0 || roundedY >= height)
+            if(roundedX < 0 || roundedX >= width || roundedY < 0 || roundedY >= height + 2)
             {
                 return false;
             }
 
-            if(grid[roundedX, roundedY] != null)
+            if (roundedY < height)
             {
-                return false;
+                if (grid[roundedX, roundedY] != null)
+                {
+                    return false;
+                }
             }
         }
 
